@@ -15,7 +15,9 @@ keypoints:
 - "Select multiple columns or rows using `DataFrame.loc` and a named slice."
 - "Result of slicing can be used in further operations."
 - "Use comparisons to select data based on value."
+- "Split apply combine operations"
 - "Select values or NaN using a Boolean mask."
+- "Datetime indicies for operations on timeseries"
 ---
 
 ## Note about Pandas DataFrames/Series
@@ -45,12 +47,12 @@ uniquely identifies its *entry* in the DataFrame.
 
 ~~~
 import pandas as pd
-data = pd.read_csv('data/gapminder_gdp_europe.csv', index_col='country')
-print(data.iloc[0, 0])
+data = pd.read_csv("data/Thames_Initiative_2009-2017.csv")
+data.iloc[0, 4]
 ~~~
 {: .language-python}
 ~~~
-1601.056136
+'7.2'
 ~~~
 {: .output}
 
@@ -59,80 +61,89 @@ print(data.iloc[0, 0])
 *   Can specify location by row and/or column name.
 
 ~~~
-print(data.loc["Albania", "gdpPercap_1952"])
+data.loc[0, "Site name"]
 ~~~
 {: .language-python}
 ~~~
-1601.056136
+'Thame at Wheatley'
 ~~~
 {: .output}
+
 ## Use `:` on its own to mean all columns or all rows.
 
 *   Just like Python's usual slicing notation.
 
 ~~~
-print(data.loc["Albania", :])
+data.loc[:, "Lab pH"]
 ~~~
 {: .language-python}
 ~~~
-gdpPercap_1952    1601.056136
-gdpPercap_1957    1942.284244
-gdpPercap_1962    2312.888958
-gdpPercap_1967    2760.196931
-gdpPercap_1972    3313.422188
-gdpPercap_1977    3533.003910
-gdpPercap_1982    3630.880722
-gdpPercap_1987    3738.932735
-gdpPercap_1992    2497.437901
-gdpPercap_1997    3193.054604
-gdpPercap_2002    4604.211737
-gdpPercap_2007    5937.029526
-Name: Albania, dtype: float64
+0       8.01
+1       7.94
+2       8.05
+3       8.14
+4       8.20
+        ...
+9125    7.80
+9126    7.81
+9127    7.70
+9128    7.66
+9129    7.75
+Name: Lab pH, Length: 9130, dtype: float64
 ~~~
 {: .output}
 
-*   Would get the same result printing `data.loc["Albania"]` (without a second index).
-
-~~~
-print(data.loc[:, "gdpPercap_1952"])
-~~~
-{: .language-python}
-~~~
-country
-Albania                    1601.056136
-Austria                    6137.076492
-Belgium                    8343.105127
-⋮ ⋮ ⋮
-Switzerland               14734.232750
-Turkey                     1969.100980
-United Kingdom             9979.508487
-Name: gdpPercap_1952, dtype: float64
-~~~
-{: .output}
-
-*   Would get the same result printing `data["gdpPercap_1952"]`
-*   Also get the same result printing `data.gdpPercap_1952` (not recommended, because easily confused with `.` notation for methods)
+*   Would get the same result with `data["Lab pH"]` (without a second index).
 
 ## Select multiple columns or rows using `DataFrame.loc` and a named slice.
 
 ~~~
-print(data.loc['Italy':'Poland', 'gdpPercap_1962':'gdpPercap_1972'])
+data.loc[:, "Site name": "Lab pH"]
 ~~~
 {: .language-python}
 ~~~
-             gdpPercap_1962  gdpPercap_1967  gdpPercap_1972
-country
-Italy           8243.582340    10022.401310    12269.273780
-Montenegro      4649.593785     5907.850937     7778.414017
-Netherlands    12790.849560    15363.251360    18794.745670
-Norway         13450.401510    16361.876470    18965.055510
-Poland          5338.752143     6557.152776     8006.506993
+	Site name 	Sampling Date 	Time of sampling 	Temperature (oC) 	Lab pH
+0 	Thame at Wheatley 	03/03/2009 	09:25 	7.2 	8.01
+1 	Thame at Wheatley 	09/03/2009 	09:40 	6.8 	7.94
+2 	Thame at Wheatley 	16/03/2009 	10:00 	9.3 	8.05
+3 	Thame at Wheatley 	24/03/2009 	09:45 	7.8 	8.14
+4 	Thame at Wheatley 	01/04/2009 	09:46 	8.9 	8.20
+... 	... 	... 	... 	... 	...
+9125 	Cole at Lynt Bridge 	29/08/2017 	12:15 	17.5 	7.80
+9126 	Cole at Lynt Bridge 	04/09/2017 	12:10 	15.4 	7.81
+9127 	Cole at Lynt Bridge 	11/09/2017 	13:40 	14.5 	7.70
+9128 	Cole at Lynt Bridge 	18/09/2017 	13:40 	12.8 	7.66
+9129 	Cole at Lynt Bridge 	25/09/2017 	13:20 	15 	7.75
+
+9130 rows × 5 columns
 ~~~
 {: .output}
 
 In the above code, we discover that **slicing using `loc` is inclusive at both
 ends**, which differs from **slicing using `iloc`**, where slicing indicates
-everything up to but not including the final index. 
+everything up to but not including the final index.
+
+And here's selecting a subset of rows as well as columns.
+
+~~~
+data.loc[0: 10, "Site name": "Lab pH"]
+~~~
+{: .language-python}
+~~~
+ 	Site name 	Sampling Date 	Time of sampling 	Temperature (oC) 	Lab pH
+0 	Thame at Wheatley 	03/03/2009 	09:25 	7.2 	8.01
+1 	Thame at Wheatley 	09/03/2009 	09:40 	6.8 	7.94
+2 	Thame at Wheatley 	16/03/2009 	10:00 	9.3 	8.05
+3 	Thame at Wheatley 	24/03/2009 	09:45 	7.8 	8.14
+4 	Thame at Wheatley 	01/04/2009 	09:46 	8.9 	8.20
+5 	Thame at Wheatley 	06/04/2009 	09:48 	11.3 	8.20
+6 	Thame at Wheatley 	14/04/2009 	09:10 	11.9 	8.11
+7 	Thame at Wheatley 	20/04/2009 	10:00 	11.9 	8.00
+8 	Thame at Wheatley 	27/04/2009 	09:40 	12.2 	7.98
+9 	Thame at Wheatley 	05/05/2009 	09:25 	12.5 	7.90
+10 	Thame at Wheatley 	11/05/2009 	09:44 	14.3 	7.93
+~~~
+{: .output}
 
 
 ## Result of slicing can be used in further operations.
@@ -143,26 +154,26 @@ everything up to but not including the final index.
 *   E.g., calculate max of a slice.
 
 ~~~
-print(data.loc['Italy':'Poland', 'gdpPercap_1962':'gdpPercap_1972'].max())
+data.loc[:, "Site name": "Lab pH"].max()
 ~~~
 {: .language-python}
 ~~~
-gdpPercap_1962    13450.40151
-gdpPercap_1967    16361.87647
-gdpPercap_1972    18965.05551
-dtype: float64
+Site name        Wye at Bourne End
+Sampling Date           31/10/2016
+Lab pH                        9.36
+dtype: object
 ~~~
 {: .output}
 
 ~~~
-print(data.loc['Italy':'Poland', 'gdpPercap_1962':'gdpPercap_1972'].min())
+data.loc[:, "Site name": "Lab pH"].min()
 ~~~
 {: .language-python}
 ~~~
-gdpPercap_1962    4649.593785
-gdpPercap_1967    5907.850937
-gdpPercap_1972    7778.414017
-dtype: float64
+Site name        Cherwell at Hampton Poyle
+Sampling Date                   01/02/2010
+Lab pH                                6.67
+dtype: object
 ~~~
 {: .output}
 
@@ -173,31 +184,39 @@ dtype: float64
 
 ~~~
 # Use a subset of data to keep output readable.
-subset = data.loc['Italy':'Poland', 'gdpPercap_1962':'gdpPercap_1972']
-print('Subset of data:\n', subset)
+subset = data.loc[0: 10, "Lab pH"]
+subset
 
 # Which values were greater than 10000 ?
-print('\nWhere are values large?\n', subset > 10000)
+subset > 8
 ~~~
 {: .language-python}
 ~~~
-Subset of data:
-             gdpPercap_1962  gdpPercap_1967  gdpPercap_1972
-country
-Italy           8243.582340    10022.401310    12269.273780
-Montenegro      4649.593785     5907.850937     7778.414017
-Netherlands    12790.849560    15363.251360    18794.745670
-Norway         13450.401510    16361.876470    18965.055510
-Poland          5338.752143     6557.152776     8006.506993
+0     8.01
+1     7.94
+2     8.05
+3     8.14
+4     8.20
+5     8.20
+6     8.11
+7     8.00
+8     7.98
+9     7.90
+10    7.93
+Name: Lab pH, dtype: float64
 
-Where are values large?
-            gdpPercap_1962 gdpPercap_1967 gdpPercap_1972
-country
-Italy                False           True           True
-Montenegro           False          False          False
-Netherlands           True           True           True
-Norway                True           True           True
-Poland               False          False          False
+0      True
+1     False
+2      True
+3      True
+4      True
+5      True
+6      True
+7     False
+8     False
+9     False
+10    False
+Name: Lab pH, dtype: bool
 ~~~
 {: .output}
 
@@ -206,302 +225,158 @@ Poland               False          False          False
 *   A frame full of Booleans is sometimes called a *mask* because of how it can be used.
 
 ~~~
-mask = subset > 10000
-print(subset[mask])
+mask = subset > 8
+subset[mask]
 ~~~
 {: .language-python}
 ~~~
-             gdpPercap_1962  gdpPercap_1967  gdpPercap_1972
-country
-Italy                   NaN     10022.40131     12269.27378
-Montenegro              NaN             NaN             NaN
-Netherlands     12790.84956     15363.25136     18794.74567
-Norway          13450.40151     16361.87647     18965.05551
-Poland                  NaN             NaN             NaN
+0    8.01
+2    8.05
+3    8.14
+4    8.20
+5    8.20
+6    8.11
+Name: Lab pH, dtype: float64
 ~~~
 {: .output}
 
-*   Get the value where the mask is true, and NaN (Not a Number) where it is false.
-*   Useful because NaNs are ignored by operations like max, min, average, etc.
+What would the following lines do?
 
 ~~~
-print(subset[subset > 10000].describe())
+mask = data["Lab pH"] > data["Lab pH"].quantile(0.999)
+basic = data[mask]
+basic.loc[:, "Site name": "Lab pH"]
 ~~~
 {: .language-python}
 ~~~
-       gdpPercap_1962  gdpPercap_1967  gdpPercap_1972
-count        2.000000        3.000000        3.000000
-mean     13120.625535    13915.843047    16676.358320
-std        466.373656     3408.589070     3817.597015
-min      12790.849560    10022.401310    12269.273780
-25%      12955.737547    12692.826335    15532.009725
-50%      13120.625535    15363.251360    18794.745670
-75%      13285.513523    15862.563915    18879.900590
-max      13450.401510    16361.876470    18965.055510
+	Site name 	Sampling Date 	Time of sampling 	Temperature (oC) 	Lab pH
+1224 	Ock at Abingdon 	03/05/2016 	14:45 	11.9 	8.59
+2869 	The Cut at Paley Street 	08/09/2014 	12:00 	16.3 	9.36
+3906 	Thames at Wallingford 	11/07/2011 	16:35 	19.2 	8.69
+3942 	Thames at Wallingford 	26/03/2012 	17:18 	13 	8.63
+4561 	Thames at Hannington 	01/08/2016 	13:10 	16.8 	8.61
+5390 	Kennet at Woolhampton 	01/08/2016 	09:35 	15.3 	8.73
+5787 	Enborne at Brimpton 	01/08/2016 	09:50 	15.3 	8.66
+5954 	Jubilee River at Datchet 	05/03/2012 	12:31 	9.4 	8.88
+6047 	Colne at Staines 	01/08/2016 	13:50 	17.7 	8.79
+9058 	Cole at Lynt Bridge 	03/05/2016 	12:10 	11.7 	8.59
 ~~~
 {: .output}
 
 ## Group By: split-apply-combine
 
-Pandas vectorizing methods and grouping operations are features that provide users 
+Pandas vectorizing methods and grouping operations are features that provide users
 much flexibility to analyse their data.
 
-For instance, let's say we want to have a clearer view on how the European countries 
-split themselves according to their GDP.
-
-1.  We may have a glance by splitting the countries in two groups during the years surveyed,
-    those who presented a GDP *higher* than the European average and those with a *lower* GDP.
-2.  We then estimate a *wealthy score* based on the historical (from 1962 to 2007) values,
-    where we account how many times a country has participated in the groups of *lower* or *higher* GDP
-
 ~~~
-mask_higher = data > data.mean()
-wealth_score = mask_higher.aggregate('sum', axis=1) / len(data.columns)
-print(wealth_score)
+data.loc[:, ["Site name", "Lab pH"]].groupby("Site name").mean()
 ~~~
 {: .language-python}
 ~~~
-country
-Albania                   0.000000
-Austria                   1.000000
-Belgium                   1.000000
-Bosnia and Herzegovina    0.000000
-Bulgaria                  0.000000
-Croatia                   0.000000
-Czech Republic            0.500000
-Denmark                   1.000000
-Finland                   1.000000
-France                    1.000000
-Germany                   1.000000
-Greece                    0.333333
-Hungary                   0.000000
-Iceland                   1.000000
-Ireland                   0.333333
-Italy                     0.500000
-Montenegro                0.000000
-Netherlands               1.000000
-Norway                    1.000000
-Poland                    0.000000
-Portugal                  0.000000
-Romania                   0.000000
-Serbia                    0.000000
-Slovak Republic           0.000000
-Slovenia                  0.333333
-Spain                     0.333333
-Sweden                    1.000000
-Switzerland               1.000000
-Turkey                    0.000000
-United Kingdom            1.000000
-dtype: float64
+ 	Lab pH
+Site name
+Cherwell at Hampton Poyle 	7.938881
+Cole at Lynt Bridge 	7.946381
+Coln at Whelford 	8.006821
+Colne at Staines 	8.121493
+Enborne at Brimpton 	7.796158
+Evenlode at Cassington Mill 	7.933395
+Jubilee River at Datchet 	7.950212
+Kennet at Woolhampton 	8.034962
+Leach at Lechlade 	7.890348
+Lodden at Charvil 	7.843077
+Ock at Abingdon 	8.007889
+Pang at Tidmarsh 	7.930935
+Ray at Islip 	7.696256
+Thame at Wheatley 	7.846891
+Thames at Hannington 	7.915225
+Thames at Newbridge 	8.007239
+Thames at Runnymede 	7.956557
+Thames at Sonning 	7.953984
+Thames at Sonning 	8.021600
+Thames at Swinford 	8.019977
+Thames at Wallingford 	8.021651
+The Cut at Paley Street 	7.558159
+Windrush at Newbridge 	8.081605
+Wye at Bourne End 	8.058515
 ~~~
 {: .output}
 
-Finally, for each group in the `wealth_score` table, we sum their (financial) contribution
-across the years surveyed using chained methods:
+Various other aggregation functions, like sum, median, max, etc. are available
 
+Can you create a list of the maximum flow rates by sampling site?
+
+e.g.
 ~~~
-print(data.groupby(wealth_score).sum())
+data[["Site name", "Mean daily flow (m3/s)"]].groupby("Site name").max()
 ~~~
 {: .language-python}
+
+Now explain what each line in the following short program does:
+what is in `first`, `second`, etc.?
+
 ~~~
-          gdpPercap_1952  gdpPercap_1957  gdpPercap_1962  gdpPercap_1967  \
-0.000000    36916.854200    46110.918793    56850.065437    71324.848786   
-0.333333    16790.046878    20942.456800    25744.935321    33567.667670   
-0.500000    11807.544405    14505.000150    18380.449470    21421.846200   
-1.000000   104317.277560   127332.008735   149989.154201   178000.350040   
+first = pd.read_csv("data/Thames_Initiative_2009-2017.csv")
+second = first[["Site name", "Lab pH", "Mean daily flow (m3/s)"]]
+third = second.groupby("Site name").mean()
+fourth = third.sort_values("Mean daily flow (m3/s)")
+fourth.to_csv("processed.csv")
+~~~
+{: .language-python}
 
-          gdpPercap_1972  gdpPercap_1977  gdpPercap_1982  gdpPercap_1987  \
-0.000000    88569.346898   104459.358438   113553.768507   119649.599409   
-0.333333    45277.839976    53860.456750    59679.634020    64436.912960   
-0.500000    25377.727380    29056.145370    31914.712050    35517.678220   
-1.000000   215162.343140   241143.412730   263388.781960   296825.131210   
 
-          gdpPercap_1992  gdpPercap_1997  gdpPercap_2002  gdpPercap_2007  
-0.000000    92380.047256   103772.937598   118590.929863   149577.357928  
-0.333333    67918.093220    80876.051580   102086.795210   122803.729520  
-0.500000    36310.666080    40723.538700    45564.308390    51403.028210  
-1.000000   315238.235970   346930.926170   385109.939210   427850.333420
+## Datetime indicies
+
+Pandas is very adept at manipulating timeseries, but the data must be in the correct format first.
+
+Let's take the date and the time columns, combine them, and create a DatetimeIndex
+
+~~~
+data["datetime"] = pd.to_datetime(data["Sampling Date"] + " " + data["Time of sampling"])
+temporal = data.set_index("datetime")
+temporal.index
+~~~
+{: .language-python}
+
+~~~
+DatetimeIndex(['2009-03-03 09:25:00', '2009-09-03 09:40:00',
+               '2009-03-16 10:00:00', '2009-03-24 09:45:00',
+               '2009-01-04 09:46:00', '2009-06-04 09:48:00',
+               '2009-04-14 09:10:00', '2009-04-20 10:00:00',
+               '2009-04-27 09:40:00', '2009-05-05 09:25:00',
+               ...
+               '2017-07-24 12:30:00', '2017-07-31 12:10:00',
+               '2017-07-08 12:00:00', '2017-08-14 12:15:00',
+               '2017-08-21 12:10:00', '2017-08-29 12:15:00',
+               '2017-04-09 12:10:00', '2017-11-09 13:40:00',
+               '2017-09-18 13:40:00', '2017-09-25 13:20:00'],
+              dtype='datetime64[ns]', name='datetime', length=9130, freq=None)
 ~~~
 {: .output}
 
+We can now index the data by date as well as all the other methods of indexing!
 
-> ## Selection of Individual Values
->
-> Assume Pandas has been imported into your notebook
-> and the Gapminder GDP data for Europe has been loaded:
->
-> ~~~
-> import pandas as pd
->
-> df = pd.read_csv('data/gapminder_gdp_europe.csv', index_col='country')
-> ~~~
-> {: .language-python}
->
-> Write an expression to find the Per Capita GDP of Serbia in 2007.
-> > ## Solution
-> > The selection can be done by using the labels for both the row ("Serbia") and the column ("gdpPercap_2007"):
-> > ~~~
-> > print(df.loc['Serbia', 'gdpPercap_2007'])
-> > ~~~
-> > {: .language-python}
-> > The output is
-> > ~~~
-> > 9786.534714
-> > ~~~
-> >{: .output}
-> {: .solution}
-{: .challenge}
+e.g.
+~~~
+temporal.loc['2009-03-03 09:25:00', "Lab pH"]
+temporal.loc['2009-03-03', "Lab pH"]
+temporal.loc['2009', "Lab pH"]
+~~~
+{: .language-python}
 
-> ## Extent of Slicing
->
-> 1.  Do the two statements below produce the same output?
-> 2.  Based on this,
->     what rule governs what is included (or not) in numerical slices and named slices in Pandas?
-> 
-> ~~~
-> print(df.iloc[0:2, 0:2])
-> print(df.loc['Albania':'Belgium', 'gdpPercap_1952':'gdpPercap_1962'])
-> ~~~
-> {: .language-python}
-> 
-> > ## Solution
-> > No, they do not produce the same output! The output of the first statement is:
-> > ~~~
-> >         gdpPercap_1952  gdpPercap_1957
-> > country                                
-> > Albania     1601.056136     1942.284244
-> > Austria     6137.076492     8842.598030
-> > ~~~
-> >{: .output}
-> > The second statement gives:
-> > ~~~
-> >         gdpPercap_1952  gdpPercap_1957  gdpPercap_1962
-> > country                                                
-> > Albania     1601.056136     1942.284244     2312.888958
-> > Austria     6137.076492     8842.598030    10750.721110
-> > Belgium     8343.105127     9714.960623    10991.206760
-> > ~~~
-> >{: .output}
-> > Clearly, the second statement produces an additional column and an additional row compared to the first statement.  
-> > What conclusion can we draw? We see that a numerical slice, 0:2, *omits* the final index (i.e. index 2)
-> > in the range provided,
-> > while a named slice, 'gdpPercap_1952':'gdpPercap_1962', *includes* the final element.
-> {: .solution}
-{: .challenge}
+It also paves the way for split-apply-combine on time ranges
 
-> ## Reconstructing Data
->
-> Explain what each line in the following short program does:
-> what is in `first`, `second`, etc.?
->
-> ~~~
-> first = pd.read_csv('data/gapminder_all.csv', index_col='country')
-> second = first[first['continent'] == 'Americas']
-> third = second.drop('Puerto Rico')
-> fourth = third.drop('continent', axis = 1)
-> fourth.to_csv('result.csv')
-> ~~~
-> {: .language-python}
->
-> > ## Solution
-> > Let's go through this piece of code line by line.
-> > ~~~
-> > first = pd.read_csv('data/gapminder_all.csv', index_col='country')
-> > ~~~
-> > {: .language-python}
-> > This line loads the dataset containing the GDP data from all countries into a dataframe called 
-> > `first`. The `index_col='country'` parameter selects which column to use as the 
-> > row labels in the dataframe.  
-> > ~~~
-> > second = first[first['continent'] == 'Americas']
-> > ~~~
-> > {: .language-python}
-> > This line makes a selection: only those rows of `first` for which the 'continent' column matches 
-> > 'Americas' are extracted. Notice how the Boolean expression inside the brackets, 
-> > `first['continent'] == 'Americas'`, is used to select only those rows where the expression is true. 
-> > Try printing this expression! Can you print also its individual True/False elements? 
-> > (hint: first assign the expression to a variable)
-> > ~~~
-> > third = second.drop('Puerto Rico')
-> > ~~~
-> > {: .language-python}
-> > As the syntax suggests, this line drops the row from `second` where the label is 'Puerto Rico'. The 
-> > resulting dataframe `third` has one row less than the original dataframe `second`.
-> > ~~~
-> > fourth = third.drop('continent', axis = 1)
-> > ~~~
-> > {: .language-python}
-> > Again we apply the drop function, but in this case we are dropping not a row but a whole column. 
-> > To accomplish this, we need to specify also the `axis` parameter (we want to drop the second column 
-> > which has index 1).
-> > ~~~
-> > fourth.to_csv('result.csv')
-> > ~~~
-> > {: .language-python}
-> > The final step is to write the data that we have been working on to a csv file. Pandas makes this easy 
-> > with the `to_csv()` function. The only required argument to the function is the filename. Note that the 
-> > file will be written in the directory from which you started the Jupyter or Python session.
-> {: .solution}
-{: .challenge}
+~~~
+temporal["Lab pH"].resample("1W").mean()
+~~~
+{: .language-python}
 
-> ## Selecting Indices
->
-> Explain in simple terms what `idxmin` and `idxmax` do in the short program below.
-> When would you use these methods?
->
-> ~~~
-> data = pd.read_csv('data/gapminder_gdp_europe.csv', index_col='country')
-> print(data.idxmin())
-> print(data.idxmax())
-> ~~~
-> {: .language-python}
->
-> > ## Solution
-> > For each column in `data`, `idxmin` will return the index value corresponding to each column's minimum;
-> > `idxmax` will do accordingly the same for each column's maximum value.
-> >
-> > You can use these functions whenever you want to get the row index of the minimum/maximum value and not the actual minimum/maximum value.
-> {: .solution}
-{: .challenge}
+More on plotting in a moment, but here's the data resampled to yearly.
 
-> ## Practice with Selection
->
-> Assume Pandas has been imported and the Gapminder GDP data for Europe has been loaded.
-> Write an expression to select each of the following:
->
-> 1.  GDP per capita for all countries in 1982.
-> 2.  GDP per capita for Denmark for all years.
-> 3.  GDP per capita for all countries for years *after* 1985.
-> 4.  GDP per capita for each country in 2007 as a multiple of 
->     GDP per capita for that country in 1952.
->
-> > ## Solution
-> > 1:
-> > ~~~
-> > data['gdpPercap_1982']
-> > ~~~
-> > {: .language-python}
-> >
-> > 2:
-> > ~~~
-> > data.loc['Denmark',:]
-> > ~~~
-> > {: .language-python}
-> >
-> > 3:
-> > ~~~
-> > data.loc[:,'gdpPercap_1985':]
-> > ~~~
-> > {: .language-python}
-> > Pandas is smart enough to recognize the number at the end of the column label and does not give you an error, although no column named `gdpPercap_1985` actually exists. This is useful if new columns are added to the CSV file later.
-> >
-> > 4:
-> > ~~~
-> > data['gdpPercap_2007']/data['gdpPercap_1952']
-> > ~~~
-> > {: .language-python}
-> {: .solution}
-{: .challenge}
+~~~
+temporal["Lab pH"].resample("1A").mean().plot()
+~~~
+{: .language-python}
 
 > ## Many Ways of Access
 >
@@ -652,55 +527,6 @@ print(data.groupby(wealth_score).sum())
 > > {: .language-python}
 > {: .solution}
 {: .challenge}
-
-> ## Exploring available methods using the `dir()` function
->
-> Python includes a `dir()` function that can be used to display all of the available methods (functions) that are built into a data object.  In Episode 4, we used some methods with a string. But we can see many more are available by using `dir()`:
->
-> ~~~
-> my_string = 'Hello world!'   # creation of a string object 
-> dir(my_string)
-> ~~~
-> {: .language-python}
->
-> This command returns:
->
-> ~~~
-> ['__add__',
-> ...
-> '__subclasshook__',
-> 'capitalize',
-> 'casefold',
-> 'center',
-> ...
-> 'upper',
-> 'zfill']
-> ~~~
-> {: .language-python}
->
-> You can use `help()` or <kbd>Shift</kbd>+<kbd>Tab</kbd> to get more information about what these methods do.
->
-> Assume Pandas has been imported and the Gapminder GDP data for Europe has been loaded as `data`.  Then, use `dir()` 
-> to find the function that prints out the median per-capita GDP across all European countries for each year that information is available.
->
-> > ## Solution
-> > Among many choices, `dir()` lists the `median()` function as a possibility.  Thus,
-> > ~~~
-> > data.median()
-> > ~~~
-> > {: .language-python}
-> {: .solution}
-{: .challenge}
-
-
-> ## Interpretation
->
-> Poland's borders have been stable since 1945,
-> but changed several times in the years before then.
-> How would you handle this if you were creating a table of GDP per capita for Poland
-> for the entire twentieth century?
-{: .challenge}
-
 
 [pandas-dataframe]: https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html
 [pandas-series]: https://pandas.pydata.org/pandas-docs/stable/generated/pandas.Series.html
