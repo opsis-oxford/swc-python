@@ -148,22 +148,6 @@ goals = [1, 'Create lists.', 2, 'Extract items from lists.', 3, 'Modify lists.']
 ~~~
 {: .language-python}
 
-## Character strings can be indexed like lists.
-
-*   Get single characters from a character string using indexes in square brackets.
-
-~~~
-element = 'carbon'
-print('zeroth character:', element[0])
-print('third character:', element[3])
-~~~
-{: .language-python}
-~~~
-zeroth character: c
-third character: b
-~~~
-{: .output}
-
 ## Character strings are immutable.
 
 *   Cannot change the characters in a string after it has been created.
