@@ -88,9 +88,9 @@ By default, [`DataFrame.plot`](https://pandas.pydata.org/pandas-docs/stable/gene
 
 ## Varying plot type
 
-Back to using the matplotlib object oriented notation for fine control
-
 We can vary the plot type...
+
+Here's an example using the DataFrame convenience plotting
 
 ~~~
 maxima = data.groupby("Site name").max()
@@ -101,6 +101,8 @@ maxima["Total Ca (mg/l)"].plot(kind="bar")
 One can over plot many datasets with repeated calls to plot functions like scatter, bar, hist, etc.
 
 We can also add a legend by using the `label` keyword for each dataset and then calling ax.legend()
+
+Here's an example using the matplotlib figure and axis notation
 
 ~~~
 f, ax = plt.subplots(figsize=(12, 6))
@@ -116,7 +118,7 @@ ax.legend()
 ~~~
 {: .language-python}
 
-Here's another plot type, a histogram
+And lastly, here's another plot type, a histogram
 
 ~~~
 import numpy as np
