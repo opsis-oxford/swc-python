@@ -187,7 +187,7 @@ dtype: object
 subset = data.loc[0: 10, "Lab pH"]
 subset
 
-# Which values were greater than 10000 ?
+# Which values were greater than 8?
 subset > 8
 ~~~
 {: .language-python}
