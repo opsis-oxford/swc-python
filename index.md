@@ -21,7 +21,8 @@ as well (e.g., repl.it, Anaconda).
 > 2. Learners must install Python 3 before the class starts.
 >
 > 3. Learners must get the data before class starts:
->    please download and unzip the file 
+>    please download and unzip the files:
+>    [python-novice-gapminder-data.zip]({{page.root}}/files/python-novice-gapminder-data.zip) and 
 >    [thames_water_quality.zip]({{page.root}}/files/thames_water_quality.zip).
 >
 >    Please see [the setup instructions][lesson-setup]

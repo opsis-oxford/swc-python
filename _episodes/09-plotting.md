@@ -84,9 +84,13 @@ ax.set_title(site_name)
 ~~~
 {: .language-python}
 
-*   By default, [`DataFrame.plot`](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.plot.html#pandas.DataFrame.plot) plots with the rows as the X axis.
+By default, [`DataFrame.plot`](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.plot.html#pandas.DataFrame.plot) plots with the rows as the X axis.
 
-And we can vary the plot type...
+## Varying plot type
+
+Back to using the matplotlib object oriented notation for fine control
+
+We can vary the plot type...
 
 ~~~
 maxima = data.groupby("Site name").max()
@@ -128,9 +132,6 @@ ax.set_ylabel("Frequency")
 ## Saving your plot to a file
 
 ~~~
-import numpy as np
-f, ax = plt.subplots()
-ax.hist(data["Mean daily flow (m3/s)"], bins=np.logspace(0, 2, 50))
 f.savefig('plot.png')
 ~~~
 {: .language-python}
