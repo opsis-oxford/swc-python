@@ -31,19 +31,20 @@ import matplotlib.pyplot as plt
 time = [0, 1, 2, 3]
 position = [0, 100, 200, 300]
 
-plt.plot(time, position)
-plt.xlabel('Time (hr)')
-plt.ylabel('Position (km)')
+fig, ax = plt.subplots()
+ax.plot(time, position)
+ax.xlabel('Time (hr)')
+ax.ylabel('Position (km)')
 ~~~
 {: .language-python}
 
 ![Simple Position-Time Plot](../fig/9_simple_position_time_plot.svg)
 
 > ## Display All Open Figures
-> 
-> In our Jupyter Notebook example, running the cell should generate the figure directly below the code. 
+>
+> In our Jupyter Notebook example, running the cell should generate the figure directly below the code.
 > The figure is also included in the Notebook document for future viewing.
-> However, other Python environments like an interactive Python session started from a terminal 
+> However, other Python environments like an interactive Python session started from a terminal
 > or a Python script executed via the command line require an additional command to display the figure.
 >
 > Instruct `matplotlib` to show a figure:
@@ -61,166 +62,67 @@ plt.ylabel('Position (km)')
 
 *   We can also plot [Pandas dataframes](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html).
 *   This implicitly uses [`matplotlib.pyplot`](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.html#module-matplotlib.pyplot).
-*   Before plotting, we convert the column headings from a `string` to `integer` data type, since they represent numerical values,
-    using [str.replace()](https://pandas.pydata.org/docs/reference/api/pandas.Series.str.replace.html) to remove the `gpdPercap_`
-	prefix and then [astype(int)](https://pandas.pydata.org/docs/reference/api/pandas.Series.astype.html)
-	to convert the series of string values (`['1952', '1957', ..., '2007']`) to a series of integers: `[1925, 1957, ..., 2007]`.
+*   First, process the data to create a datetime index
 
 ~~~
 import pandas as pd
+import matplotlib.pyplot as plt
 
-data = pd.read_csv('data/gapminder_gdp_oceania.csv', index_col='country')
+data = pd.read_csv("data/Thames_Initiative_2009-2017.csv")
+data["datetime"] = pd.to_datetime(data["Sampling Date"] + " " + data["Time of sampling"])
+data = data.set_index(data.datetime)
 
-# Extract year from last 4 characters of each column name
-# The current column names are structured as 'gdpPercap_(year)', 
-# so we want to keep the (year) part only for clarity when plotting GDP vs. years
-# To do this we use replace(), which removes from the string the characters stated in the argument
-# This method works on strings, so we use replace() from Pandas Series.str vectorized string functions
+dissolved_cols = [col for col in data.columns if col.startswith("Dissolved")]
 
-years = data.columns.str.replace('gdpPercap_', '')
+site_name = "Thames at Wallingford"
 
-# Convert year values to integers, saving results back to dataframe
+f, ax = plt.subplots(figsize=(12,6))
+site = data[data["Site name"] == site_name]
+ax = site.loc["2011", dissolved_cols].plot(ax=ax)
 
-data.columns = years.astype(int)
-
-data.loc['Australia'].plot()
+ax.set_title(site_name)
 ~~~
 {: .language-python}
-
-![GDP plot for Australia](../fig/9_gdp_australia.svg)
-## Select and transform data, then plot it.
 
 *   By default, [`DataFrame.plot`](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.plot.html#pandas.DataFrame.plot) plots with the rows as the X axis.
-*   We can transpose the data in order to plot multiple series.
+
+And we can vary the plot type...
 
 ~~~
-data.T.plot()
-plt.ylabel('GDP per capita')
-~~~
-{: .language-python}
-
-![GDP plot for Australia and New Zealand](../fig/9_gdp_australia_nz.svg)
-## Many styles of plot are available.
-
-*   For example, do a bar plot using a fancier style.
-
-~~~
-plt.style.use('ggplot')
-data.T.plot(kind='bar')
-plt.ylabel('GDP per capita')
+maxima = data.groupby("Site name").max()
+maxima["Total Ca (mg/l)"].plot(kind="bar")
 ~~~
 {: .language-python}
 
-![GDP barplot for Australia](../fig/9_gdp_bar.svg)
+One can over plot many datasets with repeated calls to plot functions like scatter, bar, hist, etc.
 
-## Data can also be plotted by calling the `matplotlib` `plot` function directly.
-*   The command is `plt.plot(x, y)`
-*   The color and format of markers can also be specified as an additional optional argument e.g., `b-` is a blue line, `g--` is a green dashed line.
-
-## Get Australia data from dataframe
+We can also add a legend by using the `label` keyword for each dataset and then calling ax.legend()
 
 ~~~
-years = data.columns
-gdp_australia = data.loc['Australia']
-
-plt.plot(years, gdp_australia, 'g--')
-~~~
-{: .language-python}
-
-![GDP formatted plot for Australia](../fig/9_gdp_australia_formatted.svg)
-
-## Can plot many sets of data together.
-
-~~~
-# Select two countries' worth of data.
-gdp_australia = data.loc['Australia']
-gdp_nz = data.loc['New Zealand']
-
-# Plot with differently-colored markers.
-plt.plot(years, gdp_australia, 'b-', label='Australia')
-plt.plot(years, gdp_nz, 'g-', label='New Zealand')
-
-# Create legend.
-plt.legend(loc='upper left')
-plt.xlabel('Year')
-plt.ylabel('GDP per capita ($)')
+f, ax = plt.subplots(figsize=(12, 6))
+alpha = 0.5
+subset = data.iloc[::10, ]
+ax.scatter(subset.index, subset.loc[:, "Total Cu (ug/l)"], c="red", label="Copper", alpha=alpha)
+ax.scatter(subset.index, subset.loc[:, "Total Zn (ug/l)"], c="grey", label="Zinc", alpha=alpha)
+ax.scatter(subset.index, subset.loc[:, "Total Mn (ug/l)"], c="purple", label="Manganese", alpha=alpha)
+ax.set_ylim(0, 40)
+ax.set_ylabel("Element concentration (ug/l)")
+ax.set_xlabel("Time")
+ax.legend()
 ~~~
 {: .language-python}
 
-> ## Adding a Legend
-> 
-> Often when plotting multiple datasets on the same figure it is desirable to have 
-> a legend describing the data.
->
-> This can be done in `matplotlib` in two stages:
-> 
-> * Provide a label for each dataset in the figure:
->
-> ~~~
-> plt.plot(years, gdp_australia, label='Australia')
-> plt.plot(years, gdp_nz, label='New Zealand')
-> ~~~
-> {: .language-python}
->
-> * Instruct `matplotlib` to create the legend.
->
-> ~~~
-> plt.legend()
-> ~~~
-> {: .language-python}
->
-> By default matplotlib will attempt to place the legend in a suitable position. If you
-> would rather specify a position this can be done with the `loc=` argument, e.g to place
-> the legend in the upper left corner of the plot, specify `loc='upper left'`
->
-{: .callout}
-
-
-![GDP formatted plot for Australia and New Zealand](../fig/9_gdp_australia_nz_formatted.svg)
-*   Plot a scatter plot correlating the GDP of Australia and New Zealand
-*   Use either `plt.scatter` or `DataFrame.plot.scatter`
+Here's another plot type, a histogram
 
 ~~~
-plt.scatter(gdp_australia, gdp_nz)
+import numpy as np
+f, ax = plt.subplots()
+ax.hist(data["Mean daily flow (m3/s)"], bins=np.logspace(0, 2, 50))
+ax.set_xscale("log")
+ax.set_xlabel("Mean daily flow (m3/s)")
+ax.set_ylabel("Frequency")
 ~~~
 {: .language-python}
-
-![GDP correlation using plt.scatter](../fig/9_gdp_correlation_plt.svg)
-~~~
-data.T.plot.scatter(x = 'Australia', y = 'New Zealand')
-~~~
-{: .language-python}
-
-![GDP correlation using data.T.plot.scatter](../fig/9_gdp_correlation_data.svg)
-
-> ## Minima and Maxima
->
-> Fill in the blanks below to plot the minimum GDP per capita over time
-> for all the countries in Europe.
-> Modify it again to plot the maximum GDP per capita over time for Europe.
->
-> ~~~
-> data_europe = pd.read_csv('data/gapminder_gdp_europe.csv', index_col='country')
-> data_europe.____.plot(label='min')
-> data_europe.____
-> plt.legend(loc='best')
-> plt.xticks(rotation=90)
-> ~~~
-> {: .language-python}
->
-> > ## Solution
-> >
-> > ~~~
-> > data_europe = pd.read_csv('data/gapminder_gdp_europe.csv', index_col='country')
-> > data_europe.min().plot(label='min')
-> > data_europe.max().plot(label='max')
-> > plt.legend(loc='best')
-> > plt.xticks(rotation=90)
-> > ~~~
-> > {: .language-python}
-> > ![Minima Maxima Solution](../fig/9_minima_maxima_solution.png)
-> {: .solution}
-{: .challenge}
 
 > ## Correlations
 >
@@ -298,7 +200,7 @@ data.T.plot.scatter(x = 'Australia', y = 'New Zealand')
 {: .challenge}
 
 > ## Saving your plot to a file
-> 
+>
 > If you are satisfied with the plot you see you may want to save it to a file,
 > perhaps to include it in a publication. There is a function in the
 > matplotlib.pyplot module that accomplishes this:
@@ -308,13 +210,13 @@ data.T.plot.scatter(x = 'Australia', y = 'New Zealand')
 > plt.savefig('my_figure.png')
 > ~~~
 > {: .language-python}
-> 
+>
 > will save the current figure to the file `my_figure.png`. The file format
 > will automatically be deduced from the file name extension (other formats
 > are pdf, ps, eps and svg).
 >
 > Note that functions in `plt` refer to a global figure variable
-> and after a figure has been displayed to the screen (e.g. with `plt.show`) 
+> and after a figure has been displayed to the screen (e.g. with `plt.show`)
 > matplotlib will make this  variable refer to a new empty figure.
 > Therefore, make sure you call `plt.savefig` before the plot is displayed to
 > the screen, otherwise you may find a file with an empty plot.
@@ -323,7 +225,7 @@ data.T.plot.scatter(x = 'Australia', y = 'New Zealand')
 > and `plt.savefig` seems not to be a possible approach.
 > One possibility to save the figure to file is then to
 >
-> * save a reference to the current figure in a local variable (with `plt.gcf`) 
+> * save a reference to the current figure in a local variable (with `plt.gcf`)
 > * call the `savefig` class method from that variable.
 >
 > ~~~
