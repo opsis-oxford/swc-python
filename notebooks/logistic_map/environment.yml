@@ -1,0 +1,13 @@
+# to install this environment:
+# micromamba create -f environment.yml -y
+name: logistic_map
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - ipykernel           # notebook support
+  - jupyter             # notebook support
+  - matplotlib==3.7.1   # basic plotting
+  - nb_conda_kernels    # notebook support
+  - numpy               # data arrays
